@@ -52,14 +52,15 @@ VALIDATE_SIGNATURE is on, it must also include the following headers:
 ```json
 {
   "filename": "final_archive_name.zip",
-  "links": [
-    { "url": "https://server.com/audio1.mp3", "filename": "track1.audio" },
+  "files": [
+    { "url": "https://server.com/audio1.mp3", "filename": "track1.audio", "compress": true },
     { "url": "https://server.com/cover.jpg", "filename": "in-a-sub-folder/cover.jpg" }
   ]
 }
 ```
 Archive `filename` is optional and used in the response Content-Disposition.
-Link `filename` is used as final path in the ZIP. Folders allowed. Any absolute path is automatically interpreted as relative (prefixed '/' is removed).
+File `filename` is used as final path in the ZIP. Folders allowed. Any absolute path is automatically interpreted as relative (prefixed '/' is removed).
+File `compress` is optional. When true, uses Deflate compression method for the file, else uses Store (no compression).
 
 ### Signing a request
 The signature is a HMAC SHA256 hex digest, using a shared secret (SIGNING_SECRET).
@@ -73,6 +74,3 @@ The signature is a HMAC SHA256 hex digest, using a shared secret (SIGNING_SECRET
 1. Concatenate the JSON body to the expiration timestamp using ':' as separator: `expiration_timestamp:json_body`.
 2. Compute its HMAC SHA256 hexadecimal digest.
 3. Add the headers `X-Zipfly-Signature` and `X-Zipfly-Expires` with their respective value.
-
-## TODO
-- Set zip compression method by file

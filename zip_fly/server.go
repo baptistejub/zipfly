@@ -26,13 +26,14 @@ type Server struct {
 
 type zipPayload struct {
 	Filename  string `json:"filename"`
-	Links     []Link `json:"links"`
+	Files     []File `json:"files"`
 	Signature string `json:"signature,omitempty"`
 }
 
-type Link struct {
+type File struct {
 	Url      string `json:"url"`
 	Filename string `json:"filename"`
+	Compress bool   `json:"compress,omitempty"`
 }
 
 func fetch(sourceUrl string) (*zipPayload, error) {
@@ -170,9 +171,9 @@ func (s *Server) streamZip(w http.ResponseWriter, payload *zipPayload) {
 
 	fmt.Println("Creating zip:", payload.Filename)
 
-	zipStreamer, err := NewZipStreamer(payload.Links)
+	zipStreamer, err := NewZipStreamer(payload.Files)
 	if err != nil {
-		fmt.Println("Error while parsing source links for", payload.Filename, ":", err.Error())
+		fmt.Println("Error while parsing source files for", payload.Filename, ":", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

@@ -10,18 +10,17 @@ import (
 )
 
 type ZipStreamer struct {
-	Entries           []*Entry
-	CompressionMethod uint16
+	Entries []*Entry
 }
 
-func NewZipStreamer(links []Link) (*ZipStreamer, error) {
-	if len(links) == 0 {
+func NewZipStreamer(files []File) (*ZipStreamer, error) {
+	if len(files) == 0 {
 		return nil, errors.New("no file to zip")
 	}
 
 	entries := make([]*Entry, 0)
-	for _, link := range links {
-		entry, err := NewEntry(link.Url, link.Filename)
+	for _, file := range files {
+		entry, err := NewEntry(file.Url, file.Filename, file.Compress)
 		if err != nil {
 			return nil, err
 		}
@@ -29,10 +28,7 @@ func NewZipStreamer(links []Link) (*ZipStreamer, error) {
 		entries = append(entries, entry)
 	}
 
-	z := ZipStreamer{
-		Entries:           entries,
-		CompressionMethod: zip.Store,
-	}
+	z := ZipStreamer{Entries: entries}
 
 	return &z, nil
 }
@@ -61,7 +57,7 @@ func (z *ZipStreamer) writeEntry(zipWriter *zip.Writer, entry *Entry) error {
 
 	header := &zip.FileHeader{
 		Name:     entry.ZipPath,
-		Method:   z.CompressionMethod,
+		Method:   entry.CompressionMethod,
 		Modified: time.Now(),
 	}
 	entryWriter, err := zipWriter.CreateHeader(header)

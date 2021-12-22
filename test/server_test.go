@@ -6,9 +6,9 @@ import (
 	zipfly "github.com/baptistejub/zipfly/zip_fly"
 )
 
-var invalidPayload = []byte(`{"links": "dfdf"}`)
+var invalidPayload = []byte(`{"files": "dfdf"}`)
 var emptyPayload = []byte(`{}`)
-var validPayload = []byte(`{"filename":"test.zip","links": [{"url":"https://a.com/1","filename":"file1.jpg"},{"url":"https://a.com/2","filename":"file2.jpg"}]}`)
+var validPayload = []byte(`{"filename":"test.zip","files": [{"url":"https://a.com/1","filename":"file1.jpg","compress":true},{"url":"https://a.com/2","filename":"file2.jpg","compress":false},{"url":"https://a.com/3","filename":"file3.pdf"}]}`)
 
 func TestUnmarshalBodyInvalid(t *testing.T) {
 	p, err := zipfly.UnmarshalPayload(invalidPayload)
@@ -25,7 +25,7 @@ func TestUnmarshalBodyEmpty(t *testing.T) {
 		t.Fatal("error on empty payload")
 	}
 
-	if len(r.Links) != 0 {
+	if len(r.Files) != 0 {
 		t.Fatal("empty payload produces data")
 	}
 }
@@ -39,10 +39,19 @@ func TestUnmarshalBodyValid(t *testing.T) {
 	if r.Filename == "" {
 		t.Fatalf("filename not parsed")
 	}
-	if len(r.Links) != 2 {
-		t.Fatalf("invalid link length %v", len(r.Links))
+	if len(r.Files) != 3 {
+		t.Fatalf("invalid link length %v", len(r.Files))
 	}
-	if r.Links[0].Url != "https://a.com/1" || r.Links[1].Filename != "file2.jpg" {
-		t.Fatal("invalid link values")
+
+	if r.Files[0].Url != "https://a.com/1" || r.Files[0].Filename != "file1.jpg" || !r.Files[0].Compress {
+		t.Fatal("invalid first file value")
+	}
+
+	if r.Files[1].Url != "https://a.com/2" || r.Files[1].Filename != "file2.jpg" || r.Files[1].Compress {
+		t.Fatal("invalid second file values")
+	}
+
+	if r.Files[2].Url != "https://a.com/3" || r.Files[2].Filename != "file3.pdf" || r.Files[2].Compress {
+		t.Fatal("invalid last file values")
 	}
 }

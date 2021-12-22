@@ -1,6 +1,7 @@
 package zipfly
 
 import (
+	"archive/zip"
 	"errors"
 	"io"
 	"net/http"
@@ -10,12 +11,13 @@ import (
 )
 
 type Entry struct {
-	Url           string
-	ZipPath       string
-	ContentReader io.ReadCloser
+	Url               string
+	ZipPath           string
+	CompressionMethod uint16
+	ContentReader     io.ReadCloser
 }
 
-func NewEntry(urlString string, zipPath string) (*Entry, error) {
+func NewEntry(urlString string, zipPath string, compress bool) (*Entry, error) {
 	url, err := url.Parse(urlString)
 	if err != nil {
 		return nil, err
@@ -36,7 +38,12 @@ func NewEntry(urlString string, zipPath string) (*Entry, error) {
 		return nil, errors.New("invalid zip filename")
 	}
 
-	return &Entry{Url: urlString, ZipPath: zipPath}, nil
+	compressionMethod := zip.Store
+	if compress {
+		compressionMethod = zip.Deflate
+	}
+
+	return &Entry{Url: urlString, ZipPath: zipPath, CompressionMethod: compressionMethod}, nil
 }
 
 func (e *Entry) Size() uint64 {
